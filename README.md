@@ -24,8 +24,13 @@ python3 -m http.server 8765
 - Workspace hub (EasyMap-style): create project first, then pick a planting module
 - Upload site plan as base
 - Draw zones: canopy, shrub, groundcover, lawn, edge/wetland, existing keep
-- One-click round corners on selected (or all) zones
-- Pan / zoom, concept notes
-- Export PNG with legend
-- Save / import JSON (`plantmap.project.v1` / `plantmap.bundle.v1`)
+- Concept grammar: site edge, planting corridor, direction arrows
+- Planting presets: sparse lawn / layered grove / rain garden edge
+- One-click round corners, undo/redo, color themes
+- Board chrome: legend, scale bar, north arrow
+- Export PNG / SVG, save / import JSON (`plantmap.project.v1`)
 - EN / 中文, local-only storage
+
+## Dev log
+
+See [`DEVLOG.md`](./DEVLOG.md) for EasyMap reference notes and shipped change history.

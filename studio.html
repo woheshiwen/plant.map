@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="studio.css?v=20260805b" />
+  <link rel="stylesheet" href="studio.css?v=20260805c" />
 </head>
 <body>
   <header class="top">
@@ -17,10 +17,18 @@
     </a>
     <div class="spacer"></div>
     <input id="projectName" class="project-name" value="Untitled Planting Board" />
+    <button type="button" class="topbtn" id="undoBtn" title="Undo">↶</button>
+    <button type="button" class="topbtn" id="redoBtn" title="Redo">↷</button>
     <button type="button" class="topbtn" id="langBtn">中文</button>
     <button type="button" class="topbtn" id="importJsonBtn">IMPORT</button>
     <button type="button" class="topbtn" id="exportJsonBtn">SAVE JSON</button>
-    <button type="button" class="topbtn primary" id="exportPngBtn">EXPORT PNG</button>
+    <div class="export-wrap">
+      <button type="button" class="topbtn primary" id="exportMenuBtn">EXPORT ▾</button>
+      <div class="menu" id="exportMenu" hidden>
+        <button type="button" id="exportPngBtn">PNG</button>
+        <button type="button" id="exportSvgBtn">SVG</button>
+      </div>
+    </div>
     <input id="importJsonFile" type="file" accept="application/json" hidden />
     <input id="baseFile" type="file" accept="image/*" hidden />
   </header>
@@ -34,10 +42,24 @@
       <div class="section-title" data-i="tools">Tools</div>
       <div class="tool-row">
         <button type="button" class="tool on" data-tool="draw" data-i="draw">Draw zone</button>
+        <button type="button" class="tool" data-tool="boundary" data-i="boundary">Site edge</button>
+        <button type="button" class="tool" data-tool="spine" data-i="spine">Corridor</button>
+        <button type="button" class="tool" data-tool="arrow" data-i="arrow">Arrow</button>
         <button type="button" class="tool" data-tool="select" data-i="select">Select</button>
         <button type="button" class="tool" data-tool="pan" data-i="pan">Pan</button>
       </div>
-      <p class="hint" data-i="drawHint">Click to add points. Double-click or Enter to close polygon. Esc cancels.</p>
+      <p class="hint" data-i="drawHint">Click to add points. Double-click or Enter to close. Esc cancels.</p>
+
+      <div class="section-title" data-i="presets">Planting presets</div>
+      <div class="preset-row" id="presetRow"></div>
+
+      <div class="section-title" data-i="theme">Theme</div>
+      <div class="theme-row" id="themeRow"></div>
+
+      <div class="section-title" data-i="chrome">Board chrome</div>
+      <label class="check"><input type="checkbox" id="showLegend" checked /> <span data-i="showLegend">Legend</span></label>
+      <label class="check"><input type="checkbox" id="showScale" checked /> <span data-i="showScale">Scale bar</span></label>
+      <label class="check"><input type="checkbox" id="showNorth" checked /> <span data-i="showNorth">North arrow</span></label>
 
       <div class="section-title" data-i="legend">Planting legend</div>
       <div class="legend" id="legend"></div>
@@ -45,7 +67,7 @@
       <div class="section-title" data-i="note">Concept note</div>
       <textarea id="note" rows="3" data-i-placeholder="notePh" placeholder="e.g. Dense canopy along south edge for shade; lawn kept open for gathering."></textarea>
 
-      <div class="section-title" data-i="zones">Zones</div>
+      <div class="section-title" data-i="zones">Zones & paths</div>
       <div id="zoneList" class="zone-list"></div>
       <button type="button" class="side-btn" id="roundCornersBtn" data-i="roundCorners">一键圆角</button>
       <p class="hint" data-i="roundHint">对选中分区圆角；未选中时对全部分区生效。</p>
@@ -68,7 +90,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="projects.js?v=20260805b"></script>
-  <script src="studio.js?v=20260805b"></script>
+  <script src="projects.js?v=20260805c"></script>
+  <script src="studio.js?v=20260805c"></script>
 </body>
 </html>

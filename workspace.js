@@ -40,15 +40,15 @@
       type_site: '场地种植分析',
       type_board: '种植图板',
       m1t: '场地解读', m1d: '日照、视线、风向与现状植被保留——先读场地再下种植。',
-      m2t: '种植概念工作室', m2d: '上传总平，画乔木 / 灌木 / 地被 / 草坪 / 水边区，一键圆角后导出图板。',
+      m2t: '种植概念工作室', m2d: '底图、分区、边界、廊道、箭头、预设、圆角、撤销与 PNG/SVG 导出。',
       m3t: '分层种植', m3d: '按冠层结构叠层推敲：上木、中木、地被与开敞留白。',
       m4t: 'AI 种植建议', m4d: '基于场地条件与图例意图，生成种植策略与分区草案（规划中）。',
       m5t: '概念演变', m5d: '记录从疏到密、从保留到更新的种植推演步骤。',
       m6t: '种植图板', m6d: '统一图例、标题与导出尺寸，整理汇报用种植概念板。',
-      t1: '种植概念工作室', t1d: '底图 + 分区绘制',
+      t1: '种植概念工作室', t1d: '分区 · 廊道 · 预设',
       t2: '一键圆角', t2d: '柔化分区折角',
-      t3: 'PNG 图板导出', t3d: '带图例输出',
-      t4: 'JSON 项目', t4d: '本地保存 / 导入'
+      t3: 'PNG / SVG 导出', t3d: '图例 · 比例尺 · 指北针',
+      t4: '撤销 / 重做', t4d: '本地编辑历史'
     },
     en: {
       localPill: 'LOCAL ONLY',
@@ -84,15 +84,15 @@
       type_site: 'Site planting analysis',
       type_board: 'Planting board',
       m1t: 'Site reading', m1d: 'Sun, views, wind and existing keep — read the site before planting.',
-      m2t: 'Planting concept studio', m2d: 'Drop a site plan, paint canopy / shrub / ground / lawn / edge, round corners, export.',
+      m2t: 'Planting concept studio', m2d: 'Base plan, zones, edge, corridor, arrows, presets, round corners, undo, PNG/SVG.',
       m3t: 'Layered planting', m3d: 'Compose by canopy structure: overstory, understory, groundcover and open lawn.',
       m4t: 'AI planting suggest', m4d: 'Draft planting strategy and zones from site cues and legend intent (planned).',
       m5t: 'Concept evolution', m5d: 'Record planting moves from sparse to dense, keep to renew.',
       m6t: 'Planting board', m6d: 'Align legend, titles and export sizes for review boards.',
-      t1: 'Concept studio', t1d: 'Base plan + zones',
+      t1: 'Concept studio', t1d: 'Zones · corridors · presets',
       t2: 'Round corners', t2d: 'Soften zone corners',
-      t3: 'PNG board export', t3d: 'Legend included',
-      t4: 'JSON project', t4d: 'Local save / import'
+      t3: 'PNG / SVG export', t3d: 'Legend · scale · north',
+      t4: 'Undo / redo', t4d: 'Local edit history'
     }
   };
 
@@ -101,7 +101,7 @@
 
   const MODULES = [
     { id: 'site', num: '01 ANALYZE', titleKey: 'm1t', descKey: 'm1d', tags: ['SITE', 'KEEP', 'FORCE'], ready: false },
-    { id: 'studio', num: '02 CONCEPT', titleKey: 'm2t', descKey: 'm2d', tags: ['ZONES', 'LEGEND', 'ROUND'], ready: true },
+    { id: 'studio', num: '02 CONCEPT', titleKey: 'm2t', descKey: 'm2d', tags: ['ZONES', 'SPINE', 'PRESET', 'SVG'], ready: true },
     { id: 'layers', num: '03 LAYERS', titleKey: 'm3t', descKey: 'm3d', tags: ['CANOPY', 'SHRUB', 'LAWN'], ready: false },
     { id: 'ai', num: '04 AI', titleKey: 'm4t', descKey: 'm4d', tags: ['SUGGEST', 'STRATEGY'], ready: false },
     { id: 'evolve', num: '05 EVOLVE', titleKey: 'm5t', descKey: 'm5d', tags: ['SEQUENCE', 'PARTI'], ready: false },
@@ -194,7 +194,7 @@
       { title: t('t1'), desc: t('t1d'), ready: true, action: 'studio' },
       { title: t('t2'), desc: t('t2d'), ready: true, action: 'studio' },
       { title: t('t3'), desc: t('t3d'), ready: true, action: 'studio' },
-      { title: t('t4'), desc: t('t4d'), ready: true, action: 'export' }
+      { title: t('t4'), desc: t('t4d'), ready: true, action: 'studio' }
     ].map((item) => `
       <button type="button" class="tool-card ${item.ready ? '' : 'soon'}" data-action="${item.action}">
         <b>${item.title}</b>

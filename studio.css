@@ -50,6 +50,38 @@ body {
 }
 .topbtn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
 .topbtn:hover { transform: translateY(-1px); }
+.topbtn:disabled { opacity: .4; cursor: default; transform: none; }
+
+.export-wrap { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 6px);
+  min-width: 120px; background: #fff; border: 1px solid var(--line);
+  border-radius: 12px; box-shadow: var(--shadow); padding: 6px; z-index: 40;
+}
+.menu[hidden] { display: none; }
+.menu button {
+  display: block; width: 100%; border: 0; background: transparent;
+  text-align: left; padding: 10px 12px; border-radius: 8px;
+  font: 700 11px 'Space Mono', monospace; cursor: pointer;
+}
+.menu button:hover { background: #F4F1EC; }
+
+.preset-row, .theme-row { display: grid; gap: 6px; margin-bottom: 8px; }
+.preset-btn, .theme-btn {
+  width: 100%; border: 1px solid var(--line); background: #fff;
+  border-radius: 12px; padding: 10px 11px; text-align: left; cursor: pointer;
+}
+.preset-btn b, .theme-btn b { display: block; font-size: 12px; }
+.preset-btn small, .theme-btn small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.theme-btn.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.theme-swatches { display: flex; gap: 4px; margin-top: 6px; }
+.theme-swatches i { width: 12px; height: 12px; border-radius: 3px; display: block; }
+
+.check {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 12px; color: var(--ink); cursor: pointer;
+}
+.check input { accent-color: var(--ink); }
 
 .shell {
   display: grid; grid-template-columns: 300px minmax(0, 1fr);
