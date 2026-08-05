@@ -17,11 +17,14 @@
       drawHint: '单击加点，双击或 Enter 闭合多边形，Esc 取消。',
       legend: '种植图例', note: '概念备注',
       notePh: '例如：南侧密植乔木遮阴；中部草坪保持开敞。',
-      zones: '分区列表', deleteZone: '删除选中分区',
+      zones: '分区列表', roundCorners: '一键圆角',
+      roundHint: '对选中分区圆角；未选中时对全部分区生效。',
+      deleteZone: '删除选中分区',
       emptyTitle: '先放一张场地底图', emptyBody: '上传总平或截图，然后在上面画种植概念区。',
       ready: '就绪', drawing: '绘制中…', selected: '已选中',
       saved: '项目已保存', exported: 'PNG 已导出', imported: '项目已导入',
-      needPoly: '至少需要 3 个点', deleted: '分区已删除'
+      needPoly: '至少需要 3 个点', deleted: '分区已删除',
+      rounded: '已圆角', noZones: '没有可圆角的分区'
     },
     en: {
       base: 'Base plan', upload: 'Upload site plan', clearBase: 'Clear base',
@@ -29,11 +32,14 @@
       drawHint: 'Click to add points. Double-click or Enter to close. Esc cancels.',
       legend: 'Planting legend', note: 'Concept note',
       notePh: 'e.g. Dense canopy on the south edge; lawn kept open in the center.',
-      zones: 'Zones', deleteZone: 'Delete selected',
+      zones: 'Zones', roundCorners: 'Round corners',
+      roundHint: 'Rounds selected zone; if none selected, rounds all zones.',
+      deleteZone: 'Delete selected',
       emptyTitle: 'Drop a site plan to start', emptyBody: 'Upload a plan image, then paint planting concept zones.',
       ready: 'Ready', drawing: 'Drawing…', selected: 'Selected',
       saved: 'Project saved', exported: 'PNG exported', imported: 'Project imported',
-      needPoly: 'Need at least 3 points', deleted: 'Zone deleted'
+      needPoly: 'Need at least 3 points', deleted: 'Zone deleted',
+      rounded: 'Corners rounded', noZones: 'No zones to round'
     }
   };
 
@@ -260,6 +266,93 @@
     renderZoneList();
     persist();
     draw();
+    setStatus(t('ready'));
+  }
+
+  /** Soft-fillet every vertex; strength ~0–0.45 of each adjacent edge. */
+  function roundPolygonCorners(points, strength = 0.32, segments = 5) {
+    const n = points.length;
+    if (n < 3) return points.map((p) => ({ x: p.x, y: p.y }));
+    const out = [];
+    const tCut = Math.min(0.45, Math.max(0.08, strength));
+    for (let i = 0; i < n; i++) {
+      const prev = points[(i + n - 1) % n];
+      const curr = points[i];
+      const next = points[(i + 1) % n];
+      const d0 = Math.hypot(curr.x - prev.x, curr.y - prev.y);
+      const d1 = Math.hypot(next.x - curr.x, next.y - curr.y);
+      if (d0 < 1e-6 || d1 < 1e-6) {
+        out.push({ x: curr.x, y: curr.y });
+        continue;
+      }
+      const p0 = {
+        x: curr.x + (prev.x - curr.x) * tCut,
+        y: curr.y + (prev.y - curr.y) * tCut
+      };
+      const p1 = {
+        x: curr.x + (next.x - curr.x) * tCut,
+        y: curr.y + (next.y - curr.y) * tCut
+      };
+      const mid = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+      const ctrl = {
+        x: mid.x + (curr.x - mid.x) * 0.22,
+        y: mid.y + (curr.y - mid.y) * 0.22
+      };
+      const vInx = (curr.x - prev.x) / d0;
+      const vIny = (curr.y - prev.y) / d0;
+      const vOutx = (next.x - curr.x) / d1;
+      const vOuty = (next.y - curr.y) / d1;
+      const dot = Math.max(-1, Math.min(1, vInx * vOutx + vIny * vOuty));
+      if (Math.acos(dot) < 0.12) {
+        out.push({ x: curr.x, y: curr.y });
+        continue;
+      }
+      for (let s = 0; s <= segments; s++) {
+        const u = s / segments;
+        const o = 1 - u;
+        out.push({
+          x: o * o * p0.x + 2 * o * u * ctrl.x + u * u * p1.x,
+          y: o * o * p0.y + 2 * o * u * ctrl.y + u * u * p1.y
+        });
+      }
+    }
+    return simplifyClosed(out, 0.65);
+  }
+
+  function simplifyClosed(points, minDist) {
+    if (points.length < 4) return points;
+    const filtered = [points[0]];
+    for (let i = 1; i < points.length; i++) {
+      const prev = filtered[filtered.length - 1];
+      const p = points[i];
+      if (Math.hypot(p.x - prev.x, p.y - prev.y) >= minDist) filtered.push(p);
+    }
+    if (filtered.length > 2) {
+      const first = filtered[0];
+      const last = filtered[filtered.length - 1];
+      if (Math.hypot(first.x - last.x, first.y - last.y) < minDist) filtered.pop();
+    }
+    return filtered.length >= 3 ? filtered : points.slice(0, 3);
+  }
+
+  function roundSelectedOrAll() {
+    const targets = selectedId
+      ? zones.filter((z) => z.id === selectedId)
+      : zones.slice();
+    if (!targets.length) {
+      toast(t('noZones'));
+      return;
+    }
+    const denser = targets.some((z) => z.points.length > 48);
+    const strength = denser ? 0.18 : 0.32;
+    const segments = denser ? 3 : 5;
+    targets.forEach((z) => {
+      z.points = roundPolygonCorners(z.points, strength, segments);
+    });
+    renderZoneList();
+    persist();
+    draw();
+    toast(t('rounded'));
     setStatus(t('ready'));
   }
 
@@ -511,6 +604,8 @@
     persist();
     draw();
   };
+
+  $('#roundCornersBtn').onclick = roundSelectedOrAll;
 
   $('#deleteZoneBtn').onclick = () => {
     if (!selectedId) return;
