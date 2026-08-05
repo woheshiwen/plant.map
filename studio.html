@@ -7,11 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="studio.css" />
+  <link rel="stylesheet" href="studio.css?v=20260805b" />
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="index.html">
+    <a class="brand" href="workspace.html">
       <span class="mark">PM</span>
       <span class="brand-text"><b>PlantMap</b><small>PLANTING CONCEPT STUDIO</small></span>
     </a>
@@ -47,8 +47,8 @@
 
       <div class="section-title" data-i="zones">Zones</div>
       <div id="zoneList" class="zone-list"></div>
-      <button type="button" class="side-btn" id="roundCornersBtn" data-i="roundCorners">Round corners</button>
-      <p class="hint" data-i="roundHint">Rounds selected zone; if none selected, rounds all zones.</p>
+      <button type="button" class="side-btn" id="roundCornersBtn" data-i="roundCorners">一键圆角</button>
+      <p class="hint" data-i="roundHint">对选中分区圆角；未选中时对全部分区生效。</p>
       <button type="button" class="side-btn danger" id="deleteZoneBtn" data-i="deleteZone">Delete selected</button>
     </aside>
 
@@ -68,6 +68,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="studio.js"></script>
+  <script src="projects.js?v=20260805b"></script>
+  <script src="studio.js?v=20260805b"></script>
 </body>
 </html>

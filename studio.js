@@ -24,7 +24,8 @@
       ready: '就绪', drawing: '绘制中…', selected: '已选中',
       saved: '项目已保存', exported: 'PNG 已导出', imported: '项目已导入',
       needPoly: '至少需要 3 个点', deleted: '分区已删除',
-      rounded: '已圆角', noZones: '没有可圆角的分区'
+      rounded: '已圆角', noZones: '没有可圆角的分区',
+      needProject: '请先在工作台创建项目'
     },
     en: {
       base: 'Base plan', upload: 'Upload site plan', clearBase: 'Clear base',
@@ -39,12 +40,22 @@
       ready: 'Ready', drawing: 'Drawing…', selected: 'Selected',
       saved: 'Project saved', exported: 'PNG exported', imported: 'Project imported',
       needPoly: 'Need at least 3 points', deleted: 'Zone deleted',
-      rounded: 'Corners rounded', noZones: 'No zones to round'
+      rounded: 'Corners rounded', noZones: 'No zones to round',
+      needProject: 'Create a project in the workspace first'
     }
   };
 
+  const Store = window.PlantMapStore;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+  const params = new URLSearchParams(window.location.search);
+  let projectId = params.get('id') || (Store && Store.getActiveId()) || null;
+  if (!projectId || !Store || !Store.getProject(projectId)) {
+    window.location.replace('workspace.html');
+    return;
+  }
+  Store.setActiveId(projectId);
 
   let lang = localStorage.getItem('pm_lang') || 'zh';
   let tool = 'draw';
@@ -264,75 +275,34 @@
     draft = [];
     selectedId = zones[zones.length - 1].id;
     renderZoneList();
-    persist();
+    try { persist(); } catch (_) { /* ignore */ }
     draw();
     setStatus(t('ready'));
   }
 
-  /** Soft-fillet every vertex; strength ~0–0.45 of each adjacent edge. */
-  function roundPolygonCorners(points, strength = 0.32, segments = 5) {
-    const n = points.length;
-    if (n < 3) return points.map((p) => ({ x: p.x, y: p.y }));
-    const out = [];
-    const tCut = Math.min(0.45, Math.max(0.08, strength));
-    for (let i = 0; i < n; i++) {
-      const prev = points[(i + n - 1) % n];
-      const curr = points[i];
-      const next = points[(i + 1) % n];
-      const d0 = Math.hypot(curr.x - prev.x, curr.y - prev.y);
-      const d1 = Math.hypot(next.x - curr.x, next.y - curr.y);
-      if (d0 < 1e-6 || d1 < 1e-6) {
-        out.push({ x: curr.x, y: curr.y });
-        continue;
-      }
-      const p0 = {
-        x: curr.x + (prev.x - curr.x) * tCut,
-        y: curr.y + (prev.y - curr.y) * tCut
-      };
-      const p1 = {
-        x: curr.x + (next.x - curr.x) * tCut,
-        y: curr.y + (next.y - curr.y) * tCut
-      };
-      const mid = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
-      const ctrl = {
-        x: mid.x + (curr.x - mid.x) * 0.22,
-        y: mid.y + (curr.y - mid.y) * 0.22
-      };
-      const vInx = (curr.x - prev.x) / d0;
-      const vIny = (curr.y - prev.y) / d0;
-      const vOutx = (next.x - curr.x) / d1;
-      const vOuty = (next.y - curr.y) / d1;
-      const dot = Math.max(-1, Math.min(1, vInx * vOutx + vIny * vOuty));
-      if (Math.acos(dot) < 0.12) {
-        out.push({ x: curr.x, y: curr.y });
-        continue;
-      }
-      for (let s = 0; s <= segments; s++) {
-        const u = s / segments;
-        const o = 1 - u;
-        out.push({
-          x: o * o * p0.x + 2 * o * u * ctrl.x + u * u * p1.x,
-          y: o * o * p0.y + 2 * o * u * ctrl.y + u * u * p1.y
+  /** Chaikin corner-cutting — visibly softens sharp polygon corners. */
+  function roundPolygonCorners(points, iterations = 2) {
+    if (!points || points.length < 3) return (points || []).map((p) => ({ x: p.x, y: p.y }));
+    let pts = points.map((p) => ({ x: p.x, y: p.y }));
+    const passes = Math.max(1, Math.min(3, iterations));
+    for (let pass = 0; pass < passes; pass++) {
+      const next = [];
+      const n = pts.length;
+      for (let i = 0; i < n; i++) {
+        const a = pts[i];
+        const b = pts[(i + 1) % n];
+        next.push({
+          x: a.x * 0.75 + b.x * 0.25,
+          y: a.y * 0.75 + b.y * 0.25
+        });
+        next.push({
+          x: a.x * 0.25 + b.x * 0.75,
+          y: a.y * 0.25 + b.y * 0.75
         });
       }
+      pts = next;
     }
-    return simplifyClosed(out, 0.65);
-  }
-
-  function simplifyClosed(points, minDist) {
-    if (points.length < 4) return points;
-    const filtered = [points[0]];
-    for (let i = 1; i < points.length; i++) {
-      const prev = filtered[filtered.length - 1];
-      const p = points[i];
-      if (Math.hypot(p.x - prev.x, p.y - prev.y) >= minDist) filtered.push(p);
-    }
-    if (filtered.length > 2) {
-      const first = filtered[0];
-      const last = filtered[filtered.length - 1];
-      if (Math.hypot(first.x - last.x, first.y - last.y) < minDist) filtered.pop();
-    }
-    return filtered.length >= 3 ? filtered : points.slice(0, 3);
+    return pts;
   }
 
   function roundSelectedOrAll() {
@@ -343,21 +313,24 @@
       toast(t('noZones'));
       return;
     }
-    const denser = targets.some((z) => z.points.length > 48);
-    const strength = denser ? 0.18 : 0.32;
-    const segments = denser ? 3 : 5;
+    let changed = 0;
     targets.forEach((z) => {
-      z.points = roundPolygonCorners(z.points, strength, segments);
+      const before = z.points.length;
+      const iterations = before > 40 ? 1 : 2;
+      z.points = roundPolygonCorners(z.points, iterations);
+      if (z.points.length !== before) changed += 1;
     });
+    tool = 'select';
+    syncTools();
     renderZoneList();
-    persist();
     draw();
-    toast(t('rounded'));
+    try { persist(); } catch (_) { /* quota — still show visual result */ }
+    toast(changed ? t('rounded') : t('rounded'));
     setStatus(t('ready'));
   }
 
-  function persist() {
-    const payload = {
+  function boardPayload() {
+    return {
       schema: 'plantmap.project.v1',
       name: $('#projectName').value.trim() || 'Untitled Planting Board',
       note: $('#note').value,
@@ -365,15 +338,22 @@
       zones,
       updatedAt: new Date().toISOString()
     };
-    localStorage.setItem('pm_project_v1', JSON.stringify(payload));
+  }
+
+  function persist() {
+    const payload = boardPayload();
+    Store.saveBoard(projectId, payload);
+    // Keep legacy key in sync for older exports / recovery.
+    try { localStorage.setItem('pm_project_v1', JSON.stringify(payload)); } catch (_) { /* ignore */ }
   }
 
   function loadPersisted() {
     try {
-      const raw = localStorage.getItem('pm_project_v1');
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      applyProject(data, false);
+      const project = Store.getProject(projectId);
+      if (project?.board) {
+        applyProject(project.board, false);
+        return;
+      }
     } catch (_) { /* ignore */ }
   }
 
@@ -588,7 +568,7 @@
         baseImage = img;
         baseDataUrl = String(reader.result);
         fitBase();
-        persist();
+        try { persist(); } catch (_) { /* ignore */ }
         draw();
         toast(lang === 'zh' ? '底图已加载' : 'Base loaded');
       };
@@ -601,29 +581,37 @@
   $('#clearBaseBtn').onclick = () => {
     baseImage = null;
     baseDataUrl = '';
-    persist();
+    try { persist(); } catch (_) { /* ignore */ }
     draw();
   };
 
-  $('#roundCornersBtn').onclick = roundSelectedOrAll;
+  $('#roundCornersBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    roundSelectedOrAll();
+  });
 
   $('#deleteZoneBtn').onclick = () => {
     if (!selectedId) return;
     zones = zones.filter((z) => z.id !== selectedId);
     selectedId = null;
     renderZoneList();
-    persist();
+    try { persist(); } catch (_) { /* ignore */ }
     draw();
     toast(t('deleted'));
   };
 
-  $('#note').addEventListener('change', persist);
-  $('#projectName').addEventListener('change', persist);
+  $('#note').addEventListener('change', () => { try { persist(); } catch (_) { /* ignore */ } });
+  $('#projectName').addEventListener('change', () => { try { persist(); } catch (_) { /* ignore */ } });
 
   $('#exportJsonBtn').onclick = () => {
-    persist();
-    const raw = localStorage.getItem('pm_project_v1');
-    const blob = new Blob([raw], { type: 'application/json' });
+    try { persist(); } catch (_) { /* ignore */ }
+    const payload = {
+      schema: 'plantmap.bundle.v1',
+      exportedAt: new Date().toISOString(),
+      project: Store.getProject(projectId)
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${($('#projectName').value || 'plantmap').replace(/[^\w\-]+/g, '_')}.json`;
@@ -637,8 +625,9 @@
     if (!file) return;
     try {
       const data = JSON.parse(await file.text());
-      applyProject(data.project || data, true);
-      persist();
+      const board = data.project?.board || data.board || data.project || data;
+      applyProject(board, true);
+      try { persist(); } catch (_) { /* ignore */ }
     } catch (_) {
       toast(lang === 'zh' ? '文件无效' : 'Invalid file');
     }
@@ -678,7 +667,7 @@
         baseImage = img;
         baseDataUrl = String(reader.result);
         fitBase();
-        persist();
+        try { persist(); } catch (_) { /* ignore */ }
         draw();
       };
       img.src = String(reader.result);

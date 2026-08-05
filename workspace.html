@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlantMap · Planting Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="workspace.css?v=20260805b" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="index.html">
+      <span class="mark">PM</span>
+      <span class="brand-text">
+        <b>PlantMap</b>
+        <small>PLANTING CONCEPT WORKSPACE</small>
+      </span>
+    </a>
+    <div class="spacer"></div>
+    <span class="pill" data-i="localPill">LOCAL ONLY</span>
+    <button type="button" class="topbtn" id="langBtn">EN</button>
+    <button type="button" class="topbtn" id="importBtn" data-i="import">IMPORT</button>
+    <button type="button" class="topbtn" id="exportBtn" data-i="export">EXPORT</button>
+    <button type="button" class="topbtn primary" id="newProjectBtn" data-i="newProject">NEW PROJECT</button>
+    <input id="importFile" type="file" accept="application/json" hidden />
+  </header>
+
+  <div class="shell">
+    <aside class="side">
+      <div class="section-title" data-i="current">Current project</div>
+      <div id="currentCard" class="project-card empty"></div>
+
+      <div class="section-title" data-i="recent">Recent projects</div>
+      <div id="recentList" class="project-list"></div>
+
+      <div class="section-title" data-i="mine">My planting projects</div>
+      <div id="allList" class="project-list"></div>
+      <p class="side-note" data-i="sideNote">Projects stay in this browser. No account.</p>
+    </aside>
+
+    <main class="main">
+      <div class="hero-block">
+        <p class="eyebrow" data-i="eyebrow">TRANSFORM · PLANT · PRESENT</p>
+        <h1 data-i="headline">你现在要做什么种植图？</h1>
+        <p class="lead" data-i="lead">参考 EasyMap 的工作流形态，做成面向种植概念的本地工具：底图、分层、圆角分区、图板导出。AI 能力会按模块逐步长进来。</p>
+      </div>
+
+      <div class="card-grid" id="moduleGrid"></div>
+
+      <section class="tools-block">
+        <div class="section-title" data-i="allTools">All tools</div>
+        <div class="tool-grid" id="toolGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-root on" id="modalRoot" aria-hidden="false">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle" data-i="modalTitle">新建项目</h2>
+      <label class="field">
+        <span data-i="nameLabel">项目名称</span>
+        <input id="projectNameInput" type="text" value="Untitled Project" />
+      </label>
+      <label class="field">
+        <span data-i="typeLabel">项目类型</span>
+        <select id="projectTypeSelect">
+          <option value="planting">Planting concept</option>
+          <option value="site">Site planting analysis</option>
+          <option value="board">Planting board</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="topbtn" id="cancelModalBtn" data-i="cancel">取消</button>
+        <button type="button" class="topbtn primary" id="createModalBtn" data-i="create">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="projects.js?v=20260805b"></script>
+  <script src="workspace.js?v=20260805b"></script>
+</body>
+</html>

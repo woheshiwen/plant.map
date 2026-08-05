@@ -34,11 +34,11 @@
       s1t: '放底图', s1d: '上传总平、CAD 截图或航拍裁切。支持平移缩放对齐。',
       s2t: '画种植区', s2d: '选图例，点击描边多边形。可写一句概念备注。',
       s3t: '导出图板', s3d: '带图例导出 PNG，或保存 JSON 项目继续改。',
-      enter: '进入工作室',
+      enter: '进入工作台',
       t4: '内部工具',
       end1: '给团队自己用的',
       end2: '种植概念工作台。',
-      endLead: '参考 EasyMap 的浏览器工具形态，聚焦 planting concept layout。数据只存本机。',
+      endLead: '参考 EasyMap 的工作台形态，做成 PlantMap 自己的种植概念系统。先建项目，再画分区。数据只存本机。',
       enter2: '打开 PlantMap',
       foot: 'PlantMap · 团队内部种植概念布局工具'
     },
@@ -76,11 +76,11 @@
       s1t: 'Drop a base', s1d: 'Upload a plan, CAD capture or aerial crop. Pan and zoom to align.',
       s2t: 'Paint zones', s2d: 'Pick a legend type and click a polygon. Add a short concept note.',
       s3t: 'Export board', s3d: 'PNG with legend, or save JSON and keep editing later.',
-      enter: 'Enter studio',
+      enter: 'Enter workspace',
       t4: 'Internal tool',
       end1: 'Built for our team’s',
       end2: 'planting concept work.',
-      endLead: 'EasyMap-inspired browser workflow, scoped to planting concept layout. Everything stays local.',
+      endLead: 'EasyMap-inspired workspace for PlantMap: create a project first, then paint planting zones. Everything stays local.',
       enter2: 'Open PlantMap',
       foot: 'PlantMap · Planting concept layouts for internal use'
     }
