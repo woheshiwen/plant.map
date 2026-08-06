@@ -127,7 +127,11 @@
       needPoly: '至少需要 3 个点', needPath: '至少需要 2 个点', deleted: '已删除',
       rounded: '已圆角', noZones: '没有可圆角的分区', presetApplied: '预设已套用',
       undid: '已撤销', redid: '已重做',
-      pathSpine: '廊道', pathArrow: '箭头', itemBoundary: '场地边界'
+      pathSpine: '廊道', pathArrow: '箭头', itemBoundary: '场地边界',
+      addSheet: '新建图纸', dupSheet: '复制图纸', delSheet: '删除图纸',
+      sheetAdded: '已新建图纸', sheetDuped: '已复制图纸', sheetDeleted: '已删除图纸',
+      sheetRenamed: '图纸已重命名', keepOneSheet: '至少保留一张图纸',
+      renameSheet: '重命名图纸'
     },
     en: {
       base: 'Base plan', upload: 'Upload site plan', clearBase: 'Clear base',
@@ -147,7 +151,11 @@
       needPoly: 'Need at least 3 points', needPath: 'Need at least 2 points', deleted: 'Deleted',
       rounded: 'Corners rounded', noZones: 'No zones to round', presetApplied: 'Preset applied',
       undid: 'Undone', redid: 'Redone',
-      pathSpine: 'Corridor', pathArrow: 'Arrow', itemBoundary: 'Site edge'
+      pathSpine: 'Corridor', pathArrow: 'Arrow', itemBoundary: 'Site edge',
+      addSheet: 'Add sheet', dupSheet: 'Duplicate sheet', delSheet: 'Delete sheet',
+      sheetAdded: 'Sheet added', sheetDuped: 'Sheet duplicated', sheetDeleted: 'Sheet deleted',
+      sheetRenamed: 'Sheet renamed', keepOneSheet: 'Keep at least one sheet',
+      renameSheet: 'Rename sheet'
     }
   };
 
@@ -183,6 +191,12 @@
   let undoStack = [];
   let redoStack = [];
   let historyReady = false;
+  let activeSheetId = Store.getActiveSheet(projectId)?.id || null;
+  const sheetParam = params.get('sheet');
+  if (sheetParam && Store.getSheet(projectId, sheetParam)) {
+    activeSheetId = sheetParam;
+    Store.setActiveSheet(projectId, sheetParam);
+  }
 
   const canvas = $('#board');
   const ctx = canvas.getContext('2d');
@@ -266,7 +280,10 @@
   function applyLang() {
     $$('[data-i]').forEach((node) => {
       const key = node.getAttribute('data-i');
-      if (I18N[lang][key] != null) node.textContent = I18N[lang][key];
+      if (I18N[lang][key] != null) {
+        if (node.classList.contains('sheet-btn')) node.title = I18N[lang][key];
+        else node.textContent = I18N[lang][key];
+      }
     });
     $('#note').placeholder = t('notePh');
     $('#langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
@@ -286,8 +303,121 @@
     renderPresets();
     renderThemes();
     renderZoneList();
+    renderSheetBar();
     syncTools();
     syncHistoryButtons();
+  }
+
+  function syncSheetUrl() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('id', projectId);
+    if (activeSheetId) url.searchParams.set('sheet', activeSheetId);
+    else url.searchParams.delete('sheet');
+    history.replaceState({}, '', url);
+  }
+
+  function currentSheetName() {
+    return Store.getSheet(projectId, activeSheetId)?.name || 'Sheet 1';
+  }
+
+  function renderSheetBar() {
+    const project = Store.getProject(projectId);
+    const sheets = project?.sheets || [];
+    const tabs = $('#sheetTabs');
+    if (!tabs) return;
+    tabs.innerHTML = sheets.map((s) => `
+      <button type="button" class="sheet-tab ${s.id === activeSheetId ? 'on' : ''}" data-sheet="${s.id}" title="${escapeAttr(s.name)}">${escapeHtml(s.name)}</button>
+    `).join('');
+    $$('#sheetTabs .sheet-tab').forEach((btn) => {
+      btn.onclick = () => switchSheet(btn.dataset.sheet);
+      btn.ondblclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        renameActiveSheet(btn.dataset.sheet);
+      };
+    });
+    const delBtn = $('#delSheetBtn');
+    if (delBtn) delBtn.disabled = sheets.length <= 1;
+    syncSheetUrl();
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str).replace(/'/g, '&#39;');
+  }
+
+  function switchSheet(sheetId, { persistCurrent = true } = {}) {
+    if (!sheetId || sheetId === activeSheetId) {
+      renderSheetBar();
+      return;
+    }
+    if (!Store.getSheet(projectId, sheetId)) return;
+    if (persistCurrent) {
+      try { persist(); } catch (_) { /* ignore */ }
+    }
+    Store.setActiveSheet(projectId, sheetId);
+    activeSheetId = sheetId;
+    const sheet = Store.getActiveSheet(projectId);
+    const board = Store.sheetToBoard(sheet, Store.getProject(projectId)?.name);
+    historyReady = false;
+    applyProject(board, false);
+    toast(sheet?.name || 'Sheet');
+  }
+
+  function addSheet() {
+    try { persist(); } catch (_) { /* ignore */ }
+    const project = Store.addSheet(projectId);
+    if (!project) return;
+    activeSheetId = project.activeSheetId;
+    const sheet = Store.getActiveSheet(projectId);
+    historyReady = false;
+    applyProject(Store.sheetToBoard(sheet, project.name), false);
+    toast(t('sheetAdded'));
+  }
+
+  function duplicateActiveSheet() {
+    try { persist(); } catch (_) { /* ignore */ }
+    const project = Store.duplicateSheet(projectId, activeSheetId);
+    if (!project) return;
+    activeSheetId = project.activeSheetId;
+    const sheet = Store.getActiveSheet(projectId);
+    historyReady = false;
+    applyProject(Store.sheetToBoard(sheet, project.name), false);
+    toast(t('sheetDuped'));
+  }
+
+  function deleteActiveSheet() {
+    const project = Store.getProject(projectId);
+    if (!project || project.sheets.length <= 1) {
+      toast(t('keepOneSheet'));
+      return;
+    }
+    try { persist(); } catch (_) { /* ignore */ }
+    const next = Store.deleteSheet(projectId, activeSheetId);
+    if (!next) return;
+    activeSheetId = next.activeSheetId;
+    const sheet = Store.getActiveSheet(projectId);
+    historyReady = false;
+    applyProject(Store.sheetToBoard(sheet, next.name), false);
+    toast(t('sheetDeleted'));
+  }
+
+  function renameActiveSheet(sheetId = activeSheetId) {
+    const sheet = Store.getSheet(projectId, sheetId);
+    if (!sheet) return;
+    const name = window.prompt(t('renameSheet'), sheet.name);
+    if (name == null) return;
+    Store.renameSheet(projectId, sheetId, name);
+    if (sheetId === activeSheetId) renderSheetBar();
+    else renderSheetBar();
+    toast(t('sheetRenamed'));
   }
 
   function renderLegend() {
@@ -715,6 +845,8 @@
       boundary,
       theme: themeKey,
       boardChrome: chrome,
+      sheetId: activeSheetId,
+      sheetName: currentSheetName(),
       updatedAt: new Date().toISOString()
     };
   }
@@ -722,13 +854,20 @@
   function persist() {
     const payload = boardPayload();
     Store.saveBoard(projectId, payload);
+    Store.setActiveSheet(projectId, activeSheetId);
     try { localStorage.setItem('pm_project_v1', JSON.stringify(payload)); } catch (_) { /* ignore */ }
+    renderSheetBar();
   }
 
   function loadPersisted() {
     try {
       const project = Store.getProject(projectId);
-      if (project?.board) applyProject(project.board, false);
+      if (!project) return;
+      if (activeSheetId) Store.setActiveSheet(projectId, activeSheetId);
+      const sheet = Store.getActiveSheet(projectId);
+      activeSheetId = sheet?.id || activeSheetId;
+      if (sheet) applyProject(Store.sheetToBoard(sheet, project.name), false);
+      else if (project.board) applyProject(project.board, false);
     } catch (_) { /* ignore */ }
   }
 
@@ -1007,14 +1146,36 @@
     if (!file) return;
     try {
       const data = JSON.parse(await file.text());
-      const board = data.project?.board || data.board || data.project || data;
-      applyProject(board, true);
-      try { persist(); } catch (_) { /* ignore */ }
+      const incoming = data.project || data;
+      if (Array.isArray(incoming.sheets) && incoming.sheets.length) {
+        const normalizedSheets = incoming.sheets.map((s, i) => ({
+          ...Store.emptySheet(s.name || `Sheet ${i + 1}`),
+          ...s,
+          id: s.id || Store.uid('s'),
+          schema: 'plantmap.sheet.v1'
+        }));
+        Store.updateProject(projectId, {
+          name: incoming.name || Store.getProject(projectId)?.name,
+          sheets: normalizedSheets,
+          activeSheetId: incoming.activeSheetId || normalizedSheets[0].id
+        });
+        activeSheetId = Store.getProject(projectId).activeSheetId;
+        const sheet = Store.getActiveSheet(projectId);
+        applyProject(Store.sheetToBoard(sheet, Store.getProject(projectId).name), true);
+      } else {
+        const board = incoming.board || data.board || incoming;
+        applyProject(board, true);
+        try { persist(); } catch (_) { /* ignore */ }
+      }
     } catch (_) {
       toast(lang === 'zh' ? '文件无效' : 'Invalid file');
     }
     e.target.value = '';
   };
+
+  $('#addSheetBtn').onclick = () => addSheet();
+  $('#dupSheetBtn').onclick = () => duplicateActiveSheet();
+  $('#delSheetBtn').onclick = () => deleteActiveSheet();
 
   canvas.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);

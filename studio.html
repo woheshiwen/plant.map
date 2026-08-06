@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="studio.css?v=20260806c" />
+  <link rel="stylesheet" href="studio.css?v=20260806d" />
 </head>
 <body>
   <header class="top">
@@ -33,6 +33,15 @@
     <input id="importJsonFile" type="file" accept="application/json" hidden />
     <input id="baseFile" type="file" accept="image/*" hidden />
   </header>
+
+  <div class="sheet-bar" id="sheetBar" aria-label="Sheets">
+    <div class="sheet-tabs" id="sheetTabs"></div>
+    <div class="sheet-actions">
+      <button type="button" class="sheet-btn" id="addSheetBtn" data-i="addSheet" title="Add sheet">＋</button>
+      <button type="button" class="sheet-btn" id="dupSheetBtn" data-i="dupSheet" title="Duplicate sheet">⧉</button>
+      <button type="button" class="sheet-btn danger" id="delSheetBtn" data-i="delSheet" title="Delete sheet">✕</button>
+    </div>
+  </div>
 
   <div class="shell">
     <aside class="side">
@@ -91,7 +100,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="projects.js?v=20260806c"></script>
-  <script src="studio.js?v=20260806c"></script>
+  <script src="projects.js?v=20260806d"></script>
+  <script src="studio.js?v=20260806d"></script>
 </body>
 </html>
