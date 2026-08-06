@@ -17,7 +17,7 @@
       sideNote: '项目只保存在本机浏览器，无需账号。',
       eyebrow: 'TRANSFORM · PLANT · PRESENT',
       headline: '你现在要做什么种植图？',
-      lead: '借鉴 EasyMap 的工作台形态，做成 PlantMap 自己的种植概念系统：先建项目，再选模块。AI 能力会按卡片逐步接入。',
+      lead: 'PlantMap 种植概念工作台：先建项目，再选模块。从底图分区到图板导出，AI 能力会按卡片逐步接入。',
       allTools: '全部工具',
       modalTitle: '新建项目',
       nameLabel: '项目名称',
@@ -61,7 +61,7 @@
       sideNote: 'Projects stay in this browser. No account.',
       eyebrow: 'TRANSFORM · PLANT · PRESENT',
       headline: 'What planting board are you making?',
-      lead: 'EasyMap-inspired workspace, scoped to PlantMap: create a project first, then pick a planting module. AI tools will land card by card.',
+      lead: 'PlantMap planting workspace: create a project first, then pick a module. From base plans to board export — AI tools will land card by card.',
       allTools: 'All tools',
       modalTitle: 'New project',
       nameLabel: 'Project name',
@@ -386,7 +386,7 @@
 
   applyLang();
 
-  // Default EasyMap-like behavior: require a project when none exist.
+  // Require a project when none exist.
   if (!Store.listProjects().length) openModal(true);
   else closeModal();
 })();

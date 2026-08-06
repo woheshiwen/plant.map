@@ -2,7 +2,7 @@
 
 Browser tool for **planting concept layouts** (internal / trial use).
 
-EasyMap-inspired workspace + planting studio. Original code, planting-scoped only.
+PlantMap workspace + planting studio. Local-only, planting-scoped.
 
 ## Try online (GitHub Pages)
 
@@ -21,7 +21,7 @@ python3 -m http.server 8765
 
 ## Features
 
-- Workspace hub (EasyMap-style): create project first, then pick a planting module
+- Workspace hub: create project first, then pick a planting module
 - Upload site plan as base
 - Draw zones: canopy, shrub, groundcover, lawn, edge/wetland, existing keep
 - Concept grammar: site edge, planting corridor, direction arrows
@@ -33,4 +33,8 @@ python3 -m http.server 8765
 
 ## Dev log
 
-See [`DEVLOG.md`](./DEVLOG.md) for EasyMap reference notes and shipped change history.
+See [`DEVLOG.md`](./DEVLOG.md) for product decisions and shipped change history.
+
+## Branding
+
+PlantMap is an independent product. Keep UI copy, docs, and comments free of third-party map-tool product names.
