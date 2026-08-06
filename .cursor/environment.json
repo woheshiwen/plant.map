@@ -1,0 +1,16 @@
+{
+  "name": "PlantMap",
+  "install": "python3 --version",
+  "terminals": [
+    {
+      "name": "static-server",
+      "command": "python3 -m http.server 8765 --bind 0.0.0.0"
+    }
+  ],
+  "ports": [
+    {
+      "name": "PlantMap",
+      "port": 8765
+    }
+  ]
+}
