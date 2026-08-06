@@ -77,3 +77,15 @@ Remove third-party product name references from user-facing copy, README, and in
 - Landing / workspace lead copy rewritten in PlantMap voice
 - README + DEVLOG no longer name external products
 - Cache-bust bumped to `?v=20260806a` for HTML entry points
+
+---
+
+## 2026-08-06 — Force cache bust after branding cleanup
+
+### Issue
+GitHub Pages already served the cleaned copy, but browsers kept an old cached `landing.js` with the previous third-party product name in the lead.
+
+### Fix
+- Rewrite end-section / workspace leads again (no third-party names)
+- Bump all asset query params to `?v=20260806c`
+- Add `Cache-Control` meta on HTML entry points
