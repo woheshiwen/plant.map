@@ -1,11 +1,11 @@
 # PlantMap Development Log
 
 Internal log of product decisions and shipped changes.  
-Inspired by EasyMap workflow, scoped to planting concept tools.
+Scoped to planting concept tools for PlantMap.
 
 ---
 
-## 2026-08-05 — Deep dive notes (EasyMap reference)
+## 2026-08-05 — Product direction notes
 
 ### Already in PlantMap
 - Landing + workspace hub + required new-project modal
@@ -13,23 +13,23 @@ Inspired by EasyMap workflow, scoped to planting concept tools.
 - One-click round corners (Chaikin)
 - Local project store (`pm_store_v1`), PNG + JSON export
 
-### EasyMap gaps worth adopting (priority)
+### Capability roadmap (priority)
 1. Studio finish: undo/redo, SVG export, legend / scale / north, themes
 2. Concept grammar: site boundary, spine/corridor, direction arrows, planting presets
 3. Later: multi-sheet projects, planting layer lab, 3D/AXO massing, board layout
 
 ### Explicit non-goals this pass
-- OSM live map / 30+ city analyses
-- Building 3D city massing
-- Max paywall / account system
-- Full Concept Lab metaball stack
+- Live map / city-analysis suite
+- Building massing as the main narrative
+- Account / paywall system
+- Metaball / acrylic overlay lab (deferred)
 
 ---
 
 ## 2026-08-05 — Step 1 + 2 implementation
 
 ### Goal
-Make the planting studio produce review-ready concept boards, and add EasyMap-like concept grammar (boundary / corridor / arrow / presets), while logging decisions here.
+Make the planting studio produce review-ready concept boards, and add concept grammar (boundary / corridor / arrow / presets), while logging decisions here.
 
 ### Step 1 — Studio finish
 - Undo / Redo (history stack on zone/path/boundary edits)
@@ -51,8 +51,6 @@ Make the planting studio produce review-ready concept boards, and add EasyMap-li
 Board payload remains `plantmap.project.v1` with additive fields:
 `boundary`, `paths`, `theme`, `boardChrome` — older projects without these still load.
 
----
-
 ### Verification checklist
 - [x] Undo / Redo buttons + Ctrl/Cmd+Z / Shift+Z
 - [x] Export menu: PNG + SVG
@@ -67,3 +65,15 @@ Board payload remains `plantmap.project.v1` with additive fields:
 - Planting layer lab (density / shade / drainage)
 - 3D / AXO planting massing
 - A3 portfolio board composer
+
+---
+
+## 2026-08-06 — Independent branding cleanup
+
+### Goal
+Remove third-party product name references from user-facing copy, README, and internal log so PlantMap reads as its own creative website.
+
+### Changes
+- Landing / workspace lead copy rewritten in PlantMap voice
+- README + DEVLOG no longer name external products
+- Cache-bust bumped to `?v=20260806a` for HTML entry points
