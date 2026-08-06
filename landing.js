@@ -38,7 +38,7 @@
       t4: '内部工具',
       end1: '给团队自己用的',
       end2: '种植概念工作台。',
-      endLead: 'PlantMap 种植概念系统：先建项目，再画分区。数据只存本机。',
+      endLead: '自主的种植概念工作台：先建项目，再画分区。数据只存本机。',
       enter2: '打开 PlantMap',
       foot: 'PlantMap · 团队内部种植概念布局工具'
     },
@@ -80,7 +80,7 @@
       t4: 'Internal tool',
       end1: 'Built for our team’s',
       end2: 'planting concept work.',
-      endLead: 'PlantMap planting workspace: create a project first, then paint planting zones. Everything stays local.',
+      endLead: 'An original planting concept workspace: create a project, then paint zones. Everything stays local.',
       enter2: 'Open PlantMap',
       foot: 'PlantMap · Planting concept layouts for internal use'
     }
