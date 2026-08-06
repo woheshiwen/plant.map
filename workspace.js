@@ -32,6 +32,9 @@
       created: '项目已创建',
       needName: '请填写项目名称',
       needProject: '请先创建项目',
+      createFail: '创建失败，请重试',
+      storageFull: '本机存储已满。请删除旧项目或清除底图后再试。',
+      storeMissing: '工作台脚本未加载，请强制刷新页面。',
       imported: '项目已导入',
       exported: '项目已导出',
       deleted: '项目已删除',
@@ -76,6 +79,9 @@
       created: 'Project created',
       needName: 'Enter a project name',
       needProject: 'Create a project first',
+      createFail: 'Could not create project. Try again.',
+      storageFull: 'Browser storage is full. Delete old projects or clear base images, then retry.',
+      storeMissing: 'Workspace scripts failed to load. Hard-refresh the page.',
       imported: 'Project imported',
       exported: 'Project exported',
       deleted: 'Project deleted',
@@ -130,11 +136,17 @@
     localStorage.setItem('pm_lang', lang);
 
     const select = $('#projectTypeSelect');
-    select.innerHTML = Store.TYPES.map((type) => (
-      `<option value="${type.id}">${t(`type_${type.id}`)}</option>`
-    )).join('');
-    renderModules();
-    renderProjects();
+    if (Store && Array.isArray(Store.TYPES)) {
+      select.innerHTML = Store.TYPES.map((type) => (
+        `<option value="${type.id}">${t(`type_${type.id}`)}</option>`
+      )).join('');
+    }
+    try {
+      renderModules();
+      renderProjects();
+    } catch (err) {
+      console.error('[PlantMap] render failed', err);
+    }
   }
 
   function formatDate(iso) {
@@ -214,7 +226,9 @@
   }
 
   function projectMeta(project) {
-    const sheets = Store.sheetCount(project);
+    const sheets = (Store && typeof Store.sheetCount === 'function')
+      ? Store.sheetCount(project)
+      : (project.sheets?.length || (project.board ? 1 : 0));
     const sheetLabel = lang === 'zh' ? `${sheets} 张图纸` : `${sheets} sheet${sheets === 1 ? '' : 's'}`;
     return `${t(`type_${project.type}`) || project.type} · ${sheetLabel} · ${formatDate(project.updatedAt)}`;
   }
@@ -315,18 +329,32 @@
   }
 
   function createFromModal() {
-    const name = $('#projectNameInput').value.trim();
-    if (!name) {
-      toast(t('needName'));
-      return;
+    try {
+      if (!Store || typeof Store.createProject !== 'function') {
+        toast(t('storeMissing'));
+        return;
+      }
+      const name = $('#projectNameInput').value.trim();
+      if (!name) {
+        toast(t('needName'));
+        return;
+      }
+      const type = $('#projectTypeSelect').value || 'planting';
+      const project = Store.createProject({ name, type });
+      if (!project?.id) {
+        toast(t('createFail'));
+        return;
+      }
+      modalRequired = false;
+      closeModal();
+      toast(t('created'));
+      // Navigate before any list re-render so a render error cannot block entry.
+      openStudio(project.id);
+    } catch (err) {
+      console.error('[PlantMap] create project failed', err);
+      const quota = err && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22);
+      toast(quota ? t('storageFull') : t('createFail'));
     }
-    const type = $('#projectTypeSelect').value;
-    const project = Store.createProject({ name, type });
-    modalRequired = false;
-    closeModal();
-    renderProjects();
-    toast(t('created'));
-    openStudio(project.id);
   }
 
   function exportProject(id) {
@@ -351,10 +379,25 @@
   };
   $('#newProjectBtn').onclick = () => openModal(false);
   $('#cancelModalBtn').onclick = () => closeModal();
-  $('#createModalBtn').onclick = createFromModal;
+  $('#createModalBtn').onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    createFromModal();
+  };
   $('#modalBackdrop').onclick = () => closeModal();
+  // Event delegation backup if the button node is replaced.
+  $('#modalRoot').addEventListener('click', (e) => {
+    const btn = e.target.closest('#createModalBtn');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    createFromModal();
+  });
   $('#projectNameInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') createFromModal();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      createFromModal();
+    }
   });
 
   $('#exportBtn').onclick = () => {
@@ -402,7 +445,11 @@
 
   applyLang();
 
+  if (!Store) {
+    toast(t('storeMissing'));
+  }
+
   // Require a project when none exist.
-  if (!Store.listProjects().length) openModal(true);
+  if (!Store || !Store.listProjects().length) openModal(true);
   else closeModal();
 })();

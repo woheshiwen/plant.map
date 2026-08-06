@@ -120,3 +120,17 @@ One planting project can hold multiple independent concept sheets (site variants
 - Planting layer lab (density / shade / drainage) — Step 3.2
 - 3D / AXO planting massing — Step 3.3
 - A3 portfolio board composer / multi-sheet overview wall — Step 3.4
+
+---
+
+## 2026-08-06 — Fix create-project modal dead click
+
+### Issue
+Some browsers showed the new-project modal but **创建** appeared to do nothing (no navigation, modal stayed). Clean browsers worked; failures matched uncaught `localStorage` quota errors or a render error blocking `openStudio`.
+
+### Fix
+- Wrap create in try/catch with visible toasts (storage full / script missing / generic fail)
+- Navigate to studio **before** re-rendering the project list
+- Harden `writeStore` with one-time base64 strip retry on quota errors
+- Guard missing `PlantMapStore` / `sheetCount` so handlers still bind
+- Explicit `z-index` on `.modal`; cache-bust `?v=20260806e`

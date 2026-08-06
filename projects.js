@@ -166,7 +166,41 @@
         };
       })
     };
-    localStorage.setItem(STORE_KEY, JSON.stringify(payload));
+    const raw = JSON.stringify(payload);
+    try {
+      localStorage.setItem(STORE_KEY, raw);
+      return;
+    } catch (err) {
+      // Quota full: strip embedded base images from non-active projects and retry once.
+      if (!isQuotaError(err)) throw err;
+      const slim = {
+        ...payload,
+        projects: payload.projects.map((p) => {
+          if (p.id === payload.activeId) return p;
+          return stripBaseImages(p);
+        })
+      };
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(slim));
+        return;
+      } catch (err2) {
+        const slimAll = {
+          ...payload,
+          projects: payload.projects.map((p) => stripBaseImages(p))
+        };
+        localStorage.setItem(STORE_KEY, JSON.stringify(slimAll));
+      }
+    }
+  }
+
+  function isQuotaError(err) {
+    return err && (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED' || err.code === 22);
+  }
+
+  function stripBaseImages(project) {
+    const sheets = (project.sheets || []).map((s) => ({ ...s, baseDataUrl: '' }));
+    const board = project.board ? { ...project.board, baseDataUrl: '' } : project.board;
+    return { ...project, sheets, board };
   }
 
   function listProjects() {
