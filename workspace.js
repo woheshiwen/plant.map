@@ -101,7 +101,7 @@
 
   const MODULES = [
     { id: 'site', num: '01 ANALYZE', titleKey: 'm1t', descKey: 'm1d', tags: ['SITE', 'KEEP', 'FORCE'], ready: false },
-    { id: 'studio', num: '02 CONCEPT', titleKey: 'm2t', descKey: 'm2d', tags: ['ZONES', 'SPINE', 'PRESET', 'SVG'], ready: true },
+    { id: 'studio', num: '02 CONCEPT', titleKey: 'm2t', descKey: 'm2d', tags: ['ZONES', 'SHEETS', 'SVG'], ready: true },
     { id: 'layers', num: '03 LAYERS', titleKey: 'm3t', descKey: 'm3d', tags: ['CANOPY', 'SHRUB', 'LAWN'], ready: false },
     { id: 'ai', num: '04 AI', titleKey: 'm4t', descKey: 'm4d', tags: ['SUGGEST', 'STRATEGY'], ready: false },
     { id: 'evolve', num: '05 EVOLVE', titleKey: 'm5t', descKey: 'm5d', tags: ['SEQUENCE', 'PARTI'], ready: false },
@@ -214,7 +214,9 @@
   }
 
   function projectMeta(project) {
-    return `${t(`type_${project.type}`) || project.type} · ${formatDate(project.updatedAt)}`;
+    const sheets = Store.sheetCount(project);
+    const sheetLabel = lang === 'zh' ? `${sheets} 张图纸` : `${sheets} sheet${sheets === 1 ? '' : 's'}`;
+    return `${t(`type_${project.type}`) || project.type} · ${sheetLabel} · ${formatDate(project.updatedAt)}`;
   }
 
   function renderProjects() {
@@ -366,16 +368,30 @@
     try {
       const data = JSON.parse(await file.text());
       const bundle = data.project || data;
-      const board = bundle.board || bundle;
       const project = Store.createProject({
-        name: bundle.name || board.name || file.name.replace(/\.json$/i, ''),
+        name: bundle.name || bundle.board?.name || file.name.replace(/\.json$/i, ''),
         type: bundle.type || 'planting'
       });
-      Store.saveBoard(project.id, {
-        ...Store.emptyBoard(project.name),
-        ...board,
-        name: project.name
-      });
+      if (Array.isArray(bundle.sheets) && bundle.sheets.length) {
+        const sheets = bundle.sheets.map((s, i) => ({
+          ...Store.emptySheet(s.name || `Sheet ${i + 1}`),
+          ...s,
+          id: Store.uid('s'),
+          schema: 'plantmap.sheet.v1'
+        }));
+        Store.updateProject(project.id, {
+          name: project.name,
+          sheets,
+          activeSheetId: sheets[0].id
+        });
+      } else {
+        const board = bundle.board || bundle;
+        Store.saveBoard(project.id, {
+          ...Store.emptyBoard(project.name),
+          ...board,
+          name: project.name
+        });
+      }
       renderProjects();
       toast(t('imported'));
     } catch (_) {

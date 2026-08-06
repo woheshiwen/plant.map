@@ -22,13 +22,14 @@ python3 -m http.server 8765
 ## Features
 
 - Workspace hub: create project first, then pick a planting module
+- Multi-sheet projects: add / switch / rename / duplicate sheets in studio
 - Upload site plan as base
 - Draw zones: canopy, shrub, groundcover, lawn, edge/wetland, existing keep
 - Concept grammar: site edge, planting corridor, direction arrows
 - Planting presets: sparse lawn / layered grove / rain garden edge
 - One-click round corners, undo/redo, color themes
 - Board chrome: legend, scale bar, north arrow
-- Export PNG / SVG, save / import JSON (`plantmap.project.v1`)
+- Export PNG / SVG, save / import JSON (`plantmap.project.v1` + sheets)
 - EN / 中文, local-only storage
 
 ## Dev log

@@ -14,9 +14,13 @@ Scoped to planting concept tools for PlantMap.
 - Local project store (`pm_store_v1`), PNG + JSON export
 
 ### Capability roadmap (priority)
-1. Studio finish: undo/redo, SVG export, legend / scale / north, themes
-2. Concept grammar: site boundary, spine/corridor, direction arrows, planting presets
-3. Later: multi-sheet projects, planting layer lab, 3D/AXO massing, board layout
+1. Studio finish: undo/redo, SVG export, legend / scale / north, themes — done
+2. Concept grammar: site boundary, spine/corridor, direction arrows, planting presets — done
+3. Later:
+   1. Multi-sheet projects — Step 3.1 (in progress / shipping)
+   2. Planting layer lab
+   3. 3D/AXO massing
+   4. A3 board layout / overview wall
 
 ### Explicit non-goals this pass
 - Live map / city-analysis suite
@@ -89,3 +93,30 @@ GitHub Pages already served the cleaned copy, but browsers kept an old cached `l
 - Rewrite end-section / workspace leads again (no third-party names)
 - Bump all asset query params to `?v=20260806c`
 - Add `Cache-Control` meta on HTML entry points
+
+---
+
+## 2026-08-06 — Step 3.1 Multi-sheet projects
+
+### Goal
+One planting project can hold multiple independent concept sheets (site variants, layer studies, presentation frames), with durable local storage and studio switching.
+
+### Schema
+- Project gains `sheets[]` + `activeSheetId`
+- Each sheet: `plantmap.sheet.v1` (`note`, `baseDataUrl`, `zones`, `paths`, `boundary`, `theme`, `boardChrome`)
+- `board` remains a mirror of the active sheet for older readers
+- Existing single-board projects auto-migrate on read
+
+### Studio
+- Sheet bar under the header: switch / add / duplicate / delete / rename (double-click tab)
+- URL supports `studio.html?id=…&sheet=…`
+- Undo history resets per sheet switch; current sheet persists first
+
+### Workspace
+- Project meta shows sheet count
+- Import / export round-trips full `sheets[]`
+
+### Follow-ups still open
+- Planting layer lab (density / shade / drainage) — Step 3.2
+- 3D / AXO planting massing — Step 3.3
+- A3 portfolio board composer / multi-sheet overview wall — Step 3.4
