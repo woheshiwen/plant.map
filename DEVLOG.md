@@ -83,7 +83,7 @@ Remove third-party product name references from user-facing copy, README, and in
 ## 2026-08-06 — Force cache bust after branding cleanup
 
 ### Issue
-GitHub Pages already served the cleaned copy, but browsers kept old `landing.js` (showing the previous “EasyMap” lead).
+GitHub Pages already served the cleaned copy, but browsers kept an old cached `landing.js` with the previous third-party product name in the lead.
 
 ### Fix
 - Rewrite end-section / workspace leads again (no third-party names)
